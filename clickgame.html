@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Green Box Clicker</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  touch-action: manipulation;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+  background: #121212;
+  color: white;
+  text-align: center;
+}
+
+/* START SCREEN */
+
+#start-screen {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#start-screen h2 {
+  color: #2ecc71;
+}
+
+#start-screen p {
+  color: #aaa;
+}
+
+input {
+  width: 230px;
+  padding: 13px;
+  margin-bottom: 15px;
+  border: 1px solid #444;
+  border-radius: 7px;
+  background: #222;
+  color: white;
+  font-size: 16px;
+  outline: none;
+}
+
+.btn {
+  border: none;
+  border-radius: 7px;
+  padding: 12px 22px;
+  background: #2ecc71;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+/* GAME */
+
+#game-container {
+  display: none;
+  flex-direction: column;
+  height: 100vh;
+  padding: 10px;
+}
+
+#top-bar {
+  min-height: 58px;
+  background: #1e1e1e;
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.green-text {
+  color: #2ecc71;
+}
+
+.icon-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 8px 11px;
+  background: #3498db;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* GAME AREA */
+
+#game-screen {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  border: 2px solid #333;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #181818;
+}
+
+/* TARGET */
+
+#target-container {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  cursor: pointer;
+}
+
+/* GREEN BOX */
+
+#green-box {
+  width: 60px;
+  height: 60px;
+  background: #2ecc71;
+  border-radius: 10px;
+
+  box-shadow:
+    0 0 18px rgba(46,204,113,0.8);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #000;
+  font-size: 12px;
+  font-weight: bold;
+  user-select: none;
+}
+
+/* RED DANGER */
+
+#red-box {
+  width: 60px;
+  height: 60px;
+  background: #e74c3c;
+  border-radius: 10px;
+
+  box-shadow:
+    0 0 18px rgba(231,76,60,0.9),
+    0 0 35px rgba(231,76,60,0.4);
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+  font-size: 11px;
+  font-weight: bold;
+  user-select: none;
+
+  animation: dangerPulse 0.35s infinite alternate;
+}
+
+@keyframes dangerPulse {
+
+  from {
+    transform: scale(0.9);
+  }
+
+  to {
+    transform: scale(1.1);
+  }
+
+}
+
+/* TIMER RING */
+
+svg {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  transform: rotate(-90deg);
+  pointer-events: none;
+}
+
+circle {
+  fill: transparent;
+  stroke: #2ecc71;
+  stroke-width: 4;
+  stroke-dasharray: 251;
+  stroke-dashoffset: 0;
+}
+
+/* EXPLOSION */
+
+#explosion {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+
+  transform:
+    translate(-50%, -50%)
+    scale(0);
+
+  font-size: 90px;
+
+  z-index: 1000;
+
+  pointer-events: none;
+
+  opacity: 0;
+}
+
+.explode {
+  animation:
+    explosionAnimation
+    0.9s
+    ease-out
+    forwards;
+}
+
+@keyframes explosionAnimation {
+
+  0% {
+    transform:
+      translate(-50%, -50%)
+      scale(0.1);
+
+    opacity: 0;
+  }
+
+  25% {
+    transform:
+      translate(-50%, -50%)
+      scale(1.2);
+
+    opacity: 1;
+  }
+
+  55% {
+    transform:
+      translate(-50%, -50%)
+      scale(2);
+
+    opacity: 1;
+  }
+
+  100% {
+    transform:
+      translate(-50%, -50%)
+      scale(3);
+
+    opacity: 0;
+  }
+
+}
+
+/* GAME OVER */
+
+#game-over {
+  display: none;
+
+  position: fixed;
+
+  top: 40%;
+  left: 50%;
+
+  transform:
+    translate(-50%, -50%);
+
+  z-index: 900;
+
+  font-size: 28px;
+
+  font-weight: bold;
+
+  color: #e74c3c;
+
+  text-shadow:
+    0 0 20px #e74c3c;
+}
+
+/* PLAY AGAIN */
+
+#restart-btn {
+  display: none;
+
+  margin:
+    10px auto 0;
+
+  background: #e67e22;
+}
+
+/* MODAL */
+
+#modal {
+  display: none;
+
+  position: fixed;
+
+  z-index: 500;
+
+  left: 50%;
+  top: 50%;
+
+  transform:
+    translate(-50%, -50%);
+
+  width: 92%;
+
+  max-width: 420px;
+
+  max-height: 85vh;
+
+  overflow-y: auto;
+
+  background: #222;
+
+  border-radius: 12px;
+
+  padding: 20px;
+
+  box-shadow:
+    0 0 30px black;
+}
+
+#modal h3 {
+  margin-top: 0;
+  color: #2ecc71;
+}
+
+table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  margin-top: 15px;
+
+  font-size: 13px;
+}
+
+th,
+td {
+  padding: 8px 4px;
+
+  border-bottom:
+    1px solid #444;
+}
+
+th {
+  color: #2ecc71;
+}
+
+.modal-buttons {
+  display: flex;
+
+  gap: 10px;
+
+  margin-top: 18px;
+}
+
+.modal-buttons button {
+  flex: 1;
+}
+
+/* MOBILE */
+
+@media(max-width:500px) {
+
+  #top-bar {
+    font-size: 12px;
+  }
+
+  .icon-btn {
+    font-size: 11px;
+    padding: 7px 8px;
+  }
+
+  #green-box,
+  #red-box {
+    width: 58px;
+    height: 58px;
+  }
+
+}
+</style>
+</head>
+
+<body>
+
+<!-- =========================
+     START SCREEN
+========================= -->
+
+<div id="start-screen">
+
+  <h2>🟩 Green Box Clicker</h2>
+
+  <p>Enter your player name</p>
+
+  <input
+    type="text"
+    id="player-name-input"
+    placeholder="Your Name"
+    maxlength="20"
+  >
+
+  <button
+    class="btn"
+    id="confirm-btn">
+
+    Confirm & Start
+
+  </button>
+
+</div>
+
+
+<!-- =========================
+     GAME
+========================= -->
+
+<div
+  id="game-container">
+
+  <div id="top-bar">
+
+    <div>
+      Player:
+      <b
+        id="player-name-display"
+        class="green-text">
+      </b>
+    </div>
+
+    <div>
+      Score:
+      <b id="score-display">0</b>
+    </div>
+
+    <div>
+      Time:
+      <b id="time-display">25</b>s
+    </div>
+
+    <button
+      class="icon-btn"
+      id="fullscreen-btn">
+
+      ⛶ Fullscreen
+
+    </button>
+
+    <button
+      class="icon-btn"
+      id="lb-btn">
+
+      🏆 Leaderboard
+
+    </button>
+
+  </div>
+
+
+  <!-- GAME AREA -->
+
+  <div id="game-screen">
+
+    <div id="target-container">
+
+      <svg>
+
+        <circle
+          id="timer-ring"
+          cx="45"
+          cy="45"
+          r="40">
+        </circle>
+
+      </svg>
+
+
+      <!-- GREEN -->
+
+      <div id="green-box">
+        CLICK!
+      </div>
+
+
+      <!-- RED -->
+
+      <div id="red-box">
+        💣 DANGER
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <button
+    class="btn"
+    id="restart-btn">
+
+    🔄 Play Again
+
+  </button>
+
+</div>
+
+
+<!-- EXPLOSION -->
+
+<div id="explosion">
+  💥
+</div>
+
+
+<!-- GAME OVER -->
+
+<div id="game-over">
+  💥 BOOM! GAME OVER!
+</div>
+
+
+<!-- =========================
+     LEADERBOARD
+========================= -->
+
+<div id="modal">
+
+  <h3>
+    🏆 LEADERBOARD
+  </h3>
+
+
+  <table>
+
+    <thead>
+
+      <tr>
+
+        <th>Rank</th>
+        <th>Name</th>
+        <th>Best</th>
+        <th>Games</th>
+        <th>Time</th>
+
+      </tr>
+
+    </thead>
+
+
+    <tbody
+      id="lb-table-body">
+    </tbody>
+
+  </table>
+
+
+  <div class="modal-buttons">
+
+    <button
+      class="btn"
+      id="modal-restart-btn">
+
+      🔄 Play Again
+
+    </button>
+
+
+    <button
+      class="btn"
+      id="close-modal-btn"
+      style="background:#e74c3c;">
+
+      Close
+
+    </button>
+
+  </div>
+
+</div>
+
+
+<script>
+
+/* =========================
+   GAME VARIABLES
+========================= */
+
+let playerName =
+  localStorage.getItem(
+    "game_last_player"
+  ) || "";
+
+let score = 0;
+
+const timerDuration = 25;
+
+let timeLeft = timerDuration;
+
+let timerInterval = null;
+
+let sessionInterval = null;
+
+let sessionTime = 0;
+
+let gameRunning = false;
+
+
+/* =========================
+   DANGER VARIABLES
+========================= */
+
+/*
+   Danger can appear
+   ONLY 2 TIMES per game.
+*/
+
+let dangerCount = 0;
+
+const maxDangerCount = 2;
+
+let dangerActive = false;
+
+let dangerTimer = null;
+
+
+/* =========================
+   LEADERBOARD
+========================= */
+
+let leaderboard =
+  JSON.parse(
+    localStorage.getItem(
+      "game_lb_v6"
+    )
+  ) || [];
+
+
+/* =========================
+   ELEMENTS
+========================= */
+
+const startScreen =
+  document.getElementById(
+    "start-screen"
+  );
+
+const gameContainer =
+  document.getElementById(
+    "game-container"
+  );
+
+const nameInput =
+  document.getElementById(
+    "player-name-input"
+  );
+
+const confirmBtn =
+  document.getElementById(
+    "confirm-btn"
+  );
+
+const nameDisplay =
+  document.getElementById(
+    "player-name-display"
+  );
+
+const scoreDisplay =
+  document.getElementById(
+    "score-display"
+  );
+
+const timeDisplay =
+  document.getElementById(
+    "time-display"
+  );
+
+const targetContainer =
+  document.getElementById(
+    "target-container"
+  );
+
+const greenBox =
+  document.getElementById(
+    "green-box"
+  );
+
+const redBox =
+  document.getElementById(
+    "red-box"
+  );
+
+const timerRing =
+  document.getElementById(
+    "timer-ring"
+  );
+
+const restartBtn =
+  document.getElementById(
+    "restart-btn"
+  );
+
+const lbBtn =
+  document.getElementById(
+    "lb-btn"
+  );
+
+const modal =
+  document.getElementById(
+    "modal"
+  );
+
+const modalRestartBtn =
+  document.getElementById(
+    "modal-restart-btn"
+  );
+
+const closeModalBtn =
+  document.getElementById(
+    "close-modal-btn"
+  );
+
+const lbTableBody =
+  document.getElementById(
+    "lb-table-body"
+  );
+
+const explosion =
+  document.getElementById(
+    "explosion"
+  );
+
+const gameOver =
+  document.getElementById(
+    "game-over"
+  );
+
+const fullscreenBtn =
+  document.getElementById(
+    "fullscreen-btn"
+  );
+
+
+/* =========================
+   LOAD NAME
+========================= */
+
+if (playerName) {
+
+  nameInput.value =
+    playerName;
+
+}
+
+
+/* =========================
+   START BUTTON
+========================= */
+
+confirmBtn.addEventListener(
+  "click",
+  () => {
+
+    const name =
+      nameInput.value.trim();
+
+    if (!name) {
+
+      alert(
+        "Please enter your name!"
+      );
+
+      return;
+    }
+
+    playerName = name;
+
+    localStorage.setItem(
+      "game_last_player",
+      playerName
+    );
+
+    nameDisplay.innerText =
+      playerName;
+
+    startScreen.style.display =
+      "none";
+
+    gameContainer.style.display =
+      "flex";
+
+    startGame();
+
+  }
+);
+
+
+/* =========================
+   START GAME
+========================= */
+
+function startGame() {
+
+  clearInterval(
+    timerInterval
+  );
+
+  clearInterval(
+    sessionInterval
+  );
+
+  clearTimeout(
+    dangerTimer
+  );
+
+  
+  score = 0;
+
+  timeLeft =
+    timerDuration;
+
+  sessionTime = 0;
+
+  gameRunning = true;
+
+
+  /* RESET DANGER */
+
+  dangerCount = 0;
+
+  dangerActive = false;
+
+
+  modal.style.display =
+    "none";
+
+  gameOver.style.display =
+    "none";
+
+
+  explosion.classList.remove(
+    "explode"
+  );
+
+
+  restartBtn.style.display =
+    "none";
+
+
+  targetContainer.style.display =
+    "flex";
+
+  greenBox.style.display =
+    "flex";
+
+  redBox.style.display =
+    "none";
+
+
+  scoreDisplay.innerText =
+    "0";
+
+  timeDisplay.innerText =
+    timerDuration;
+
+
+  timerRing.style.strokeDashoffset =
+    "0";
+
+
+  moveTarget();
+
+
+  /* SESSION TIMER */
+
+  sessionInterval =
+    setInterval(
+      () => {
+
+        if (gameRunning) {
+
+          sessionTime++;
+
+        }
+
+      },
+      1000
+    );
+
+
+  /* GAME TIMER */
+
+  timerInterval =
+    setInterval(
+      () => {
+
+        if (!gameRunning)
+          return;
+
+
+        timeLeft -= 0.1;
+
+
+        if (timeLeft < 0) {
+          timeLeft = 0;
+        }
+
+
+        timeDisplay.innerText =
+          Math.ceil(
+            timeLeft
+          );
+
+
+        const circumference =
+          2 * Math.PI * 40;
+
+
+        const offset =
+          circumference -
+          (
+            timeLeft /
+            timerDuration
+          ) *
+          circumference;
+
+
+        timerRing.style.strokeDashoffset =
+          offset;
+
+
+        if (timeLeft <= 0) {
+
+          endGame();
+
+        }
+
+      },
+      100
+    );
+
+}
+
+
+/* =========================
+   TARGET CLICK
+========================= */
+
+function handleTap(e) {
+
+  e.preventDefault();
+
+  if (!gameRunning)
+    return;
+
+
+  /* RED DANGER CLICK */
+
+  if (dangerActive) {
+
+    clearTimeout(
+      dangerTimer
+    );
+
+    explodeAndEnd();
+
+    return;
+
+  }
+
+
+  /* GREEN CLICK */
+
+  score++;
+
+  scoreDisplay.innerText =
+    score;
+
+
+  moveTarget();
+
+}
+
+
+targetContainer.addEventListener(
+  "pointerdown",
+  handleTap
+);
+
+
+/* =========================
+   MOVE TARGET
+========================= */
+
+function moveTarget() {
+
+  if (!gameRunning)
+    return;
+
+
+  const gameArea =
+    document.getElementById(
+      "game-screen"
+    );
+
+
+  const maxX =
+    Math.max(
+      0,
+      gameArea.clientWidth - 90
+    );
+
+
+  const maxY =
+    Math.max(
+      0,
+      gameArea.clientHeight - 90
+    );
+
+
+  const randomX =
+    Math.floor(
+      Math.random() *
+      (maxX + 1)
+    );
+
+
+  const randomY =
+    Math.floor(
+      Math.random() *
+      (maxY + 1)
+    );
+
+
+  targetContainer.style.left =
+    randomX + "px";
+
+
+  targetContainer.style.top =
+    randomY + "px";
+
+
+  /* CLEAR OLD DANGER */
+
+  clearTimeout(
+    dangerTimer
+  );
+
+  dangerActive = false;
+
+
+  greenBox.style.display =
+    "flex";
+
+  redBox.style.display =
+    "none";
+
+
+  /*
+    DANGER SYSTEM
+
+    Maximum = 2 times
+  */
+
+  if (
+    dangerCount < maxDangerCount
+  ) {
+
+    /*
+      15% chance
+    */
+
+    const dangerChance =
+      0.15;
+
+
+    if (
+      Math.random() <
+      dangerChance
+    ) {
+
+      dangerCount++;
+
+      dangerActive = true;
+
+
+      greenBox.style.display =
+        "none";
+
+      redBox.style.display =
+        "flex";
+
+
+      /*
+        DANGER ONLY
+        FOR 1 SECOND
+      */
+
+      dangerTimer =
+        setTimeout(
+          () => {
+
+            if (!gameRunning)
+              return;
+
+
+            dangerActive = false;
+
+
+            redBox.style.display =
+              "none";
+
+            greenBox.style.display =
+              "flex";
+
+
+            moveTarget();
+
+          },
+          1000
+        );
+
+    }
+
+  }
+
+}
+
+
+/* =========================
+   EXPLOSION
+========================= */
+
+function explodeAndEnd() {
+
+  if (!gameRunning)
+    return;
+
+
+  gameRunning = false;
+
+
+  clearInterval(
+    timerInterval
+  );
+
+  clearInterval(
+    sessionInterval
+  );
+
+  clearTimeout(
+    dangerTimer
+  );
+
+
+  targetContainer.style.display =
+    "none";
+
+
+  /* PLAY EXPLOSION */
+
+  explosion.classList.remove(
+    "explode"
+  );
+
+
+  void explosion.offsetWidth;
+
+
+  explosion.classList.add(
+    "explode"
+  );
+
+
+  gameOver.innerText =
+    "💥 BOOM! GAME OVER!";
+
+
+  gameOver.style.display =
+    "block";
+
+
+  /* SAVE SCORE */
+
+  saveLeaderboardData(
+    playerName,
+    score,
+    sessionTime
+  );
+
+
+  setTimeout(
+    () => {
+
+      gameOver.style.display =
+        "none";
+
+
+      restartBtn.style.display =
+        "block";
+
+
+      showLeaderboard();
+
+    },
+    1000
+  );
+
+}
+
+
+/* =========================
+   NORMAL END
+========================= */
+
+function endGame() {
+
+  if (!gameRunning)
+    return;
+
+
+  gameRunning = false;
+
+
+  clearInterval(
+    timerInterval
+  );
+
+  clearInterval(
+    sessionInterval
+  );
+
+  clearTimeout(
+    dangerTimer
+  );
+
+
+  dangerActive = false;
+
+
+  targetContainer.style.display =
+    "none";
+
+
+  restartBtn.style.display =
+    "block";
+
+
+  saveLeaderboardData(
+    playerName,
+    score,
+    sessionTime
+  );
+
+
+  showLeaderboard();
+
+}
+
+
+/* =========================
+   SAVE LEADERBOARD
+========================= */
+
+function saveLeaderboardData(
+  name,
+  currentScore,
+  timeSpent
+) {
+
+  let player =
+    leaderboard.find(
+      p =>
+        p.name.toLowerCase() ===
+        name.toLowerCase()
+    );
+
+
+  if (player) {
+
+    player.bestScore =
+      Math.max(
+        player.bestScore,
+        currentScore
+      );
+
+    player.gamesPlayed++;
+
+    player.totalTime +=
+      timeSpent;
+
+  }
+
+  else {
+
+    leaderboard.push({
+
+      name: name,
+
+      bestScore:
+        currentScore,
+
+      gamesPlayed: 1,
+
+      totalTime:
+        timeSpent
+
+    });
+
+  }
+
+
+  localStorage.setItem(
+    "game_lb_v6",
+    JSON.stringify(
+      leaderboard
+    )
+  );
+
+}
+
+
+/* =========================
+   SHOW LEADERBOARD
+========================= */
+
+function showLeaderboard() {
+
+  leaderboard.sort(
+    (a, b) =>
+      b.bestScore -
+      a.bestScore
+  );
+
+
+  lbTableBody.innerHTML =
+    leaderboard.map(
+      (player, index) => `
+
+        <tr>
+
+          <td>
+            #${index + 1}
+          </td>
+
+          <td>
+            <b>
+              ${escapeHTML(
+                player.name
+              )}
+            </b>
+          </td>
+
+          <td style="color:#2ecc71;">
+            ${player.bestScore}
+          </td>
+
+          <td>
+            ${player.gamesPlayed}
+          </td>
+
+          <td>
+            ${player.totalTime}s
+          </td>
+
+        </tr>
+
+      `
+    ).join("");
+
+
+  modal.style.display =
+    "block";
+
+}
+
+
+/* =========================
+   SAFE HTML
+========================= */
+
+function escapeHTML(text) {
+
+  return text
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
+}
+
+
+/* =========================
+   PLAY AGAIN
+========================= */
+
+restartBtn.addEventListener(
+  "click",
+  startGame
+);
+
+
+modalRestartBtn.addEventListener(
+  "click",
+  startGame
+);
+
+
+/* =========================
+   LEADERBOARD BUTTON
+========================= */
+
+lbBtn.addEventListener(
+  "click",
+  showLeaderboard
+);
+
+
+/* =========================
+   CLOSE
+========================= */
+
+closeModalBtn.addEventListener(
+  "click",
+  () => {
+
+    modal.style.display =
+      "none";
+
+  }
+);
+
+
+/* =========================
+   FULLSCREEN
+========================= */
+
+fullscreenBtn.addEventListener(
+  "click",
+  () => {
+
+    const elem =
+      document.documentElement;
+
+
+    if (
+      document.fullscreenElement
+    ) {
+
+      if (
+        document.exitFullscreen
+      ) {
+
+        document.exitFullscreen();
+
+      }
+
+      return;
+
+    }
+
+
+    if (
+      elem.requestFullscreen
+    ) {
+
+      elem.requestFullscreen();
+
+    }
+
+    else if (
+      elem.webkitRequestFullscreen
+    ) {
+
+      elem.webkitRequestFullscreen();
+
+    }
+
+  }
+);
+
+</script>
+
+</body>
+</html>
